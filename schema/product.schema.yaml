@@ -2,7 +2,7 @@
 # Validators in scripts/lib/product_config.rb enforce the runtime subset.
 
 $schema: "https://json-schema.org/draft/2020-12/schema"
-title: agent-delivery-kit product.yaml
+title: agent-delivery-kit product.yaml (framework config only; not product requirements)
 type: object
 required:
   - name

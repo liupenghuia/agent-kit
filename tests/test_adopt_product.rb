@@ -30,8 +30,8 @@ class AdoptProductTest < Minitest::Test
       "ruby",
       (KIT_ROOT / "scripts" / "adopt_product.rb").to_s,
       "--path", @dir.to_s,
-      "--name", "recruitment",
-      "--display-name", "寻职",
+      "--name", "my-product",
+      "--display-name", "My Product",
       "--preset", "api-web-miniprogram",
       "--mode", "link",
       "--kit-path", KIT_ROOT.to_s
@@ -40,7 +40,7 @@ class AdoptProductTest < Minitest::Test
 
     assert (@dir / "product.yaml").file?
     product = YAML.safe_load((@dir / "product.yaml").read, aliases: false)
-    assert_equal "recruitment", product["name"]
+    assert_equal "my-product", product["name"]
     assert_equal true, product.dig("frontend_targets", "miniprogram")
     assert product.dig("delivery", "checks").any? { |c| c["id"] == "backend-health" }
     assert product.dig("delivery", "checks").any? { |c| c["type"] == "service_http" }

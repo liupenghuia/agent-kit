@@ -6,10 +6,10 @@
 #
 # Usage:
 #   ruby scripts/adopt_product.rb \
-#     --path ~/work/agents-project \
-#     --name recruitment \
-#     --display-name "寻职" \
-#     --preset api-web-miniprogram \
+#     --path ~/work/existing-app \
+#     --name my-product \
+#     --display-name "My Product" \
+#     --preset api-web \
 #     --mode link \
 #     --kit-path "$(pwd)"
 
@@ -178,7 +178,7 @@ preset[:stacks].each_value do |stack_id|
   Array(fragment["checks"]).each { |c| checks << c }
 end
 
-# Prefer product-local static check if already present (main business).
+# Prefer product-local static check if already present.
 if (product_root / "scripts" / "check_web.rb").file?
   checks = checks.map do |c|
     next c unless c["id"] == "web-static"

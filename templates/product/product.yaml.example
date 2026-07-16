@@ -1,5 +1,5 @@
-# Example product.yaml — generate a real one with init_product.rb or adopt_product.rb
-kit_version: "0.2.0"
+# Example only — generate with init_product.rb or adopt_product.rb
+kit_version: "0.2.1"
 name: my-product
 display_name: "My Product"
 locales: [zh]
@@ -71,7 +71,7 @@ delivery:
 
 kit:
   mode: link
-  path: ../agent-delivery-kit
+  path: /absolute/path/to/agent-delivery-kit
 
 owners:
   product: "Product Agent"
