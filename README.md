@@ -84,7 +84,7 @@ L2  产品真相与代码（产品仓）
 - 声明式 checks：`glob` 批量语法检查、`type: service_http` 本地健康检查（`{{port}}`）
 - 默认 stack checks 对齐「后端测试 + 语法 + health + 小程序 + Web」闭环
 - `adopt_product` 备份旧 scripts 到 `scripts/legacy/`，业务 docs 不覆盖
-- CI：`.github/workflows/ci.yml`
+- CI 模板：`docs/github-actions-ci.yml`（复制到 `.github/workflows/ci.yml` 启用）
 
 ## 自测
 

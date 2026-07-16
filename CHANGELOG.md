@@ -14,7 +14,7 @@
 - Real AI adapters (Claude / Cursor / Grok), installed by `init_product` and `adopt_product`.
 - Migration guide: `docs/MIGRATION.md`.
 - Example product config: `templates/product/product.api-web-miniprogram.example.yaml`.
-- GitHub Actions CI for kit self-tests.
+- GitHub Actions CI template at `docs/github-actions-ci.yml` (copy into `.github/workflows/` when the token has `workflow` scope).
 - Expanded self-tests: adopt, delivery glob/health, product config validation.
 
 ### Changed

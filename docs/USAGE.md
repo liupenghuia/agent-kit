@@ -452,7 +452,7 @@ ruby tests/test_adopt_product.rb
 ruby tests/test_delivery_runner.rb
 ```
 
-全部应通过（exit 0）。CI 见 `.github/workflows/ci.yml`。
+全部应通过（exit 0）。CI 模板见 `docs/github-actions-ci.yml`（复制到 `.github/workflows/ci.yml` 即可启用）。
 
 ---
 
