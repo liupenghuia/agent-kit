@@ -1,0 +1,20 @@
+# Issue front matter required fields and enums
+required:
+  - id
+  - title
+  - status
+  - severity
+  - owner
+  - task
+  - found_by
+  - created
+  - updated
+id_pattern: "^ISSUE-\\d{8}-\\d{3}$"
+status:
+  - Open
+  - Assigned
+  - Fixing
+  - Ready for Retest
+  - Retest Failed
+  - Closed
+severity: [P0, P1, P2, P3]

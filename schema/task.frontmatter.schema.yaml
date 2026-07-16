@@ -1,0 +1,36 @@
+# Task front matter required fields and enums
+required:
+  - id
+  - title
+  - status
+  - priority
+  - owner
+  - created
+  - updated
+  - source_idea
+  - depends_on
+  - linked_issues
+  - required_scopes
+  - frontend_targets
+  - frontend_target_status
+  - scope_status
+  - release_required
+id_pattern: "^TASK-\\d{8}-\\d{3}$"
+status:
+  - Draft
+  - Ready for Architecture
+  - Ready for Implementation
+  - In Progress
+  - Blocked
+  - Ready for Test
+  - Test Failed
+  - Ready for Retest
+  - Ready for Release
+  - Released
+  - Done
+  - Cancelled
+priority: [P0, P1, P2, P3]
+scope_status_values: [N/A, Pending, In Progress, Blocked, Done]
+implementation_scopes: [backend, frontend, mobile, ios, android]
+all_scopes: [product, architecture, backend, frontend, mobile, ios, android, test, release]
+# frontend_targets keys are product-defined via product.yaml frontend_targets

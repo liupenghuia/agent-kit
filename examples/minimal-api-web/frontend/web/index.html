@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Admin</h1>
+      <form id="loginForm">
+        <label>
+          Account
+          <input name="account" autocomplete="username" />
+        </label>
+        <button type="submit">Sign in</button>
+      </form>
+      <section aria-label="queue">
+        <ul id="queueList"></ul>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+# Idea front matter required fields and enums
+required:
+  - id
+  - title
+  - status
+  - priority
+  - owner
+  - decision_owner
+  - created
+  - updated
+  - promoted_tasks
+id_pattern: "^IDEA-\\d{8}-\\d{3}$"
+status:
+  - Captured
+  - Discovering
+  - Ready for Review
+  - Approved
+  - Parked
+  - Rejected
+  - Promoted
+priority: [P0, P1, P2, P3]
+owner: Product Agent

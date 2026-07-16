@@ -1,0 +1,4 @@
+checks:
+  - id: web-syntax
+    when: "frontend_targets.web"
+    cmd: ["node", "--check", "frontend/web/app.js"]

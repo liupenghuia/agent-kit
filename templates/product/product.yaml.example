@@ -1,0 +1,64 @@
+# Example product.yaml — generate a real one with init_product.rb
+kit_version: "0.1.0"
+name: my-product
+display_name: "My Product"
+locales: [zh]
+decision_owner: "User"
+
+scopes:
+  backend: true
+  frontend: true
+  mobile: false
+  ios: false
+  android: false
+
+frontend_targets:
+  web: true
+  miniprogram: false
+
+stacks:
+  backend: node-api
+  web: static-admin-web
+
+truths:
+  requirements: docs/requirements.md
+  architecture: docs/architecture.md
+  openapi: docs/openapi.yaml
+  database: docs/database.md
+  discovery: docs/product-discovery.md
+  client_architecture: docs/client-architecture.md
+  testing: docs/testing.md
+  quality: docs/code-quality-prerequisites.md
+  workflow: docs/delivery-workflow.md
+
+quality:
+  mode: code-first
+  require_client_precheck: true
+  commit_coauthor: true
+
+delivery:
+  max_rounds: 3
+  evidence_root: /tmp/agent-delivery/my-product
+  command_timeout_sec: 180
+  checks:
+    - id: workflow
+      cmd: ["ruby", "scripts/validate_workflow.rb"]
+    - id: backend-test
+      when: "scopes.backend"
+      cwd: backend
+      cmd: ["npm", "test"]
+  human_gates:
+    - id: production-deploy
+      description: "Production deploy requires explicit approval"
+
+kit:
+  mode: link
+  path: ../agent-delivery-kit
+
+owners:
+  product: "Product Agent"
+  architect: "Architect Agent"
+  backend: "Backend Agent"
+  frontend: "Frontend Agent"
+  test: "Test Agent"
+  orchestrator: "Orchestrator Agent"

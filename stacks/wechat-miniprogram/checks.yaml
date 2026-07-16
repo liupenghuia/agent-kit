@@ -1,0 +1,4 @@
+checks:
+  - id: miniprogram-syntax-app
+    when: "frontend_targets.miniprogram"
+    cmd: ["node", "--check", "frontend/miniprogram/app.js"]

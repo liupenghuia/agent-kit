@@ -1,0 +1,116 @@
+# JSON Schema-style documentation for product.yaml (YAML form).
+# Validators in scripts/lib/product_config.rb enforce the runtime subset.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: agent-delivery-kit product.yaml
+type: object
+required:
+  - name
+  - scopes
+  - frontend_targets
+  - delivery
+additionalProperties: true
+properties:
+  kit_version:
+    type: string
+    description: Kit version this product was generated against
+  name:
+    type: string
+    pattern: "^[a-z0-9][a-z0-9_-]*$"
+  display_name:
+    type: string
+  locales:
+    type: array
+    items:
+      type: string
+  decision_owner:
+    type: string
+  scopes:
+    type: object
+    additionalProperties:
+      type: boolean
+    description: Implementation scope switches (backend, frontend, mobile, ios, android, ...)
+  frontend_targets:
+    type: object
+    additionalProperties:
+      type: boolean
+    description: Client targets under frontend (miniprogram, web, ...)
+  stacks:
+    type: object
+    additionalProperties:
+      type: string
+    description: Maps role keys to stack plugin ids under stacks/
+  truths:
+    type: object
+    additionalProperties:
+      type: string
+  commands:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: string
+  quality:
+    type: object
+    properties:
+      mode:
+        type: string
+        enum: [code-first, delivery-first]
+      require_client_precheck:
+        type: boolean
+      commit_coauthor:
+        type: boolean
+  delivery:
+    type: object
+    required:
+      - checks
+    properties:
+      max_rounds:
+        type: integer
+        minimum: 1
+      evidence_root:
+        type: string
+      command_timeout_sec:
+        type: integer
+        minimum: 1
+      checks:
+        type: array
+        items:
+          type: object
+          required: [id, cmd]
+          properties:
+            id:
+              type: string
+            when:
+              type: string
+              description: "scopes.x | frontend_targets.y | true"
+            cwd:
+              type: string
+            cmd:
+              type: array
+              items:
+                type: string
+      human_gates:
+        type: array
+        items:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+            description:
+              type: string
+            when:
+              type: string
+  kit:
+    type: object
+    properties:
+      mode:
+        type: string
+        enum: [link, copy]
+      path:
+        type: string
+  owners:
+    type: object
+    additionalProperties:
+      type: string
