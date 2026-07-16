@@ -1,7 +1,7 @@
 # AGENTS — Minimal API + Web
 
-Kit: agent-delivery-kit@0.1.0  
-Kit path: `/Users/Penguin/Documents/PPFiles_Learn/agents-project/agent-delivery-kit`  
+Kit: agent-delivery-kit@0.2.0  
+Kit path: `/Users/Penguin/Documents/PPFiles_Learn/agent-delivery-kit`  
 Quality mode: code-first
 
 ## Instruction Order

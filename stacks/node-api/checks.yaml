@@ -3,7 +3,20 @@ checks:
     when: "scopes.backend"
     cwd: backend
     cmd: ["npm", "test"]
-  - id: backend-syntax-app
+  - id: backend-syntax
     when: "scopes.backend"
     cwd: backend
-    cmd: ["node", "--check", "src/app.js"]
+    cmd: ["node", "--check"]
+    glob: "src/**/*.js"
+  - id: backend-health
+    when: "scopes.backend"
+    type: service_http
+    cwd: backend
+    start: ["node", "src/server.js"]
+    env:
+      NODE_ENV: test
+      PORT: "{{port}}"
+      DATABASE_PATH: ":memory:"
+      WECHAT_MOCK: "1"
+    health_url: "http://127.0.0.1:{{port}}/health"
+    ready_timeout_sec: 15

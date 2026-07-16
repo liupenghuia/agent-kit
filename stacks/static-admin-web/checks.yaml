@@ -1,4 +1,14 @@
 checks:
   - id: web-syntax
     when: "frontend_targets.web"
-    cmd: ["node", "--check", "frontend/web/app.js"]
+    cmd: ["node", "--check"]
+    glob: "frontend/web/**/*.js"
+  - id: web-static
+    when: "frontend_targets.web"
+    cmd: ["ruby", "scripts/check_static_web.rb", "frontend/web"]
+  - id: web-health
+    when: "frontend_targets.web"
+    type: service_http
+    start: ["python3", "-m", "http.server", "{{port}}", "--directory", "frontend/web"]
+    health_url: "http://127.0.0.1:{{port}}/index.html"
+    ready_timeout_sec: 10

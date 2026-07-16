@@ -1,7 +1,8 @@
 # agent-delivery-kit 使用说明
 
-> 版本：见仓库根目录 `VERSION`（当前 **0.1.0**）  
-> 读者：想在新产品仓使用多 Agent 闭环交付的人，以及在本 monorepo 内维护 kit 的人。
+> 版本：见仓库根目录 `VERSION`（当前 **0.2.0**）  
+> 读者：想在新产品仓或主业务仓使用多 Agent 闭环交付的人，以及维护 kit 的人。  
+> 主业务迁移：见 **[MIGRATION.md](./MIGRATION.md)**。
 
 ---
 
@@ -14,8 +15,9 @@
 | 角色与读序 | Product / Architect / Backend / Frontend / Test / Orchestrator 等约定 |
 | 状态机与门禁 | Idea / Task / Issue 状态、优先级、handoff 规则 |
 | 脚手架 | `init_product.rb` 一键生成产品仓骨架 |
+| 既有仓接入 | `adopt_product.rb` 非破坏性写入 `product.yaml` + 薄包装 scripts |
 | 校验 | `validate_workflow.rb` 校验 front matter 与双向链接 |
-| 交付 runner | `deliver.rb` 按 `product.yaml` 的 checks 跑本地验证并写报告 |
+| 交付 runner | `deliver.rb` 按 `product.yaml` 的 checks 跑本地验证并写报告（支持 glob / service_http） |
 | 栈插件 | `node-api`、`static-admin-web`、`wechat-miniprogram` 等默认检查与 AGENTS |
 
 **它不包含**：业务 OpenAPI、表结构、领域 ADR、业务代码。这些永远属于产品仓。
@@ -219,6 +221,17 @@ kit:
 
 > 跑 `deliver.rb <task>` 时，**以任务 front matter 为准**过滤 checks，这样同一产品可对「仅后端」任务跳过前端检查。
 
+### 6.2.1 check 扩展字段（0.2+）
+
+| 字段 | 说明 |
+| --- | --- |
+| `type` | `cmd`（默认）或 `service_http` |
+| `glob` | 对每个匹配文件追加路径并执行 `cmd`（相对 `cwd`） |
+| `allow_empty` | glob 匹配 0 文件时仍通过 |
+| `start` / `health_url` | `service_http`：拉起进程并轮询 HTTP |
+| `env` | 额外环境变量；可与 `start`/`health_url` 使用 `{{port}}` |
+| `ready_timeout_sec` | 健康检查超时（默认 15） |
+
 ### 6.3 `truths`
 
 映射文档路径，默认指向 `docs/*`。`doctor` 会在缺失时 **WARN**（不强制 FAIL，便于 stub 阶段）。
@@ -389,9 +402,9 @@ cp ideas/template.md ideas/my-idea.md
 
 | id | 产品目录 | 默认检查 |
 | --- | --- | --- |
-| `node-api` | `backend/` | `npm test`、`node --check src/app.js` |
-| `static-admin-web` | `frontend/web/` | `node --check frontend/web/app.js` |
-| `wechat-miniprogram` | `frontend/miniprogram/` | `node --check frontend/miniprogram/app.js` |
+| `node-api` | `backend/` | `npm test`、`glob` 语法、`service_http` `/health` |
+| `static-admin-web` | `frontend/web/` | `glob` 语法、`check_static_web`、静态 HTTP health |
+| `wechat-miniprogram` | `frontend/miniprogram/` | `glob` 语法、可选 `tests/**/*.test.js` |
 | `react-web` / `ios` / `android` | 预留 | 空 checks，可自行扩展 |
 
 新增栈：在 `stacks/my-stack/` 增加 `AGENTS.md` + `checks.yaml` + 可选 stub，然后 init 时用 `--backend my-stack` 等参数引用。
@@ -400,13 +413,13 @@ cp ideas/template.md ideas/my-idea.md
 
 ## 11. 与 AI 工具对接
 
-`adapters/` 提供薄封装模板（`.stub`，可按需拷到产品仓）：
+`adapters/` 提供薄封装（init/adopt 会安装到产品仓）：
 
 | 工具 | 路径 |
 | --- | --- |
-| Claude | `adapters/claude/CLAUDE.md.stub` → 产品仓 `CLAUDE.md` |
-| Cursor | `adapters/cursor/.cursor/rules/agent-delivery.mdc.stub` |
-| Grok | `adapters/grok/skills/agent-delivery/SKILL.md.stub` |
+| Claude | `adapters/claude/CLAUDE.md` → 产品仓 `CLAUDE.md` |
+| Cursor | `adapters/cursor/.cursor/rules/agent-delivery.mdc` |
+| Grok | `adapters/grok/skills/agent-delivery/SKILL.md` |
 
 原则：入口只指向 `AGENTS.md` + kit 流程，不把业务规则写进 adapter。
 
@@ -435,21 +448,25 @@ cd backend && node --test test/app.test.js
 ruby tests/test_product_config.rb
 ruby tests/test_validate_workflow.rb
 ruby tests/test_init_product.rb
+ruby tests/test_adopt_product.rb
+ruby tests/test_delivery_runner.rb
 ```
 
-全部应通过（exit 0）。
+全部应通过（exit 0）。CI 见 `.github/workflows/ci.yml`。
 
 ---
 
-## 14. 从主寻职工程迁出 / 复用建议
+## 14. 从主业务工程接入
+
+完整步骤见 **[MIGRATION.md](./MIGRATION.md)**。摘要：
 
 | 步骤 | 动作 |
 | --- | --- |
 | 1 | 新产品直接 `init_product`（推荐） |
-| 2 | 老仓：增加 `product.yaml`，scripts 改为薄包装指向本 kit |
-| 3 | 业务 checks 从现有 `scripts/deliver.rb` 硬编码逻辑迁入 `product.yaml` / stack `checks.yaml` |
-| 4 | 流程文档以 kit 为准升级；业务 ADR / openapi / database 留在老仓 |
-| 5 | 将来可将 `agent-delivery-kit/` 拆成独立 Git 仓，产品用 submodule 或 `kit.path` 指向 |
+| 2 | 老仓：`adopt_product.rb`（备份旧 scripts，写 `product.yaml`） |
+| 3 | `doctor` → `validate_workflow` → 对单 task `deliver` |
+| 4 | 业务 ADR / openapi / database / 代码留在产品仓 |
+| 5 | kit 可用独立 Git 仓；产品 `kit.path` 指向本机路径或 vendored |
 
 **不要**把寻职业务 media、sqlite、招聘 ADR 放进 kit。
 
@@ -459,7 +476,7 @@ ruby tests/test_init_product.rb
 
 | 变更 | 版本位 |
 | --- | --- |
-| 新 stack、文档澄清 | MINOR |
+| 新 stack、文档澄清、additive check 字段 | MINOR |
 | front matter 必填字段变更、状态机改名 | MAJOR |
 | 纯 bugfix | PATCH |
 
@@ -467,13 +484,13 @@ ruby tests/test_init_product.rb
 
 ---
 
-## 16. 非目标（0.1 不做）
+## 16. 非目标（0.2 仍不做）
 
 - 自动调用 LLM API 的编排服务  
 - 云端任务看板  
 - 替业务生成完整领域模型  
 - 假装 human_gates 通过  
-- 强制主寻职仓立刻切换到 kit scripts  
+- 在 adopt 时覆盖业务真相文档  
 
 ---
 
@@ -491,13 +508,17 @@ ruby tests/test_init_product.rb
 
 确认 `tasks/<name>.md` 存在，或 front matter `title` 与参数一致；且不是仅有 `template.md`。
 
+### service_http 超时
+
+确认 `start` 进程会监听 `{{port}}`，且 `health_url` 路径正确；查看 evidence 下 `*.service.log`。
+
 ### Ruby 2.6 警告
 
 可用；推荐升级到 Ruby 3+。kit 为兼容 macOS 系统 Ruby 2.6 做了最低版本放宽。
 
-### 主工程 `scripts/deliver.rb` 与 kit 的关系
+### 主工程旧 `scripts/deliver.rb`
 
-主寻职工程仍使用仓库根 `scripts/*`（业务 hardcode 检查）。kit 提供**通用化**实现；迁移时用产品仓包装 + `product.yaml.checks` 替代 hardcode。
+接入后旧脚本在 `scripts/legacy/`。对比行为用同一 task 各跑一次；稳定后可删除 legacy。
 
 ---
 
@@ -506,6 +527,7 @@ ruby tests/test_init_product.rb
 ```bash
 # 在 kit 内
 ruby scripts/init_product.rb --path ../new-app --name new-app --preset api-web --kit-path "$(pwd)"
+ruby scripts/adopt_product.rb --path ../agents-project --name recruitment --preset api-web-miniprogram --kit-path "$(pwd)"
 ruby tests/test_init_product.rb
 
 # 在产品仓内
@@ -514,5 +536,4 @@ ruby scripts/validate_workflow.rb
 ruby scripts/deliver.rb my-task
 ```
 
-更细的状态机与门禁：产品仓 `docs/delivery-workflow.md`。  
-设计全文：主仓 `docs/agent-delivery-kit-design.md`。
+更细的状态机与门禁：产品仓 `docs/delivery-workflow.md`。

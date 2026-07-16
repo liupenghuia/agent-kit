@@ -1,7 +1,11 @@
-# Example product.yaml — generate a real one with init_product.rb or adopt_product.rb
+# Example product.yaml for a main-business style API + Web + Mini Program product.
+# Prefer generating via:
+#   ruby scripts/adopt_product.rb --path DIR --name SLUG --preset api-web-miniprogram
+# or init_product.rb for greenfield repos.
+
 kit_version: "0.2.0"
-name: my-product
-display_name: "My Product"
+name: recruitment
+display_name: "寻职"
 locales: [zh]
 decision_owner: "User"
 
@@ -14,11 +18,12 @@ scopes:
 
 frontend_targets:
   web: true
-  miniprogram: false
+  miniprogram: true
 
 stacks:
   backend: node-api
   web: static-admin-web
+  miniprogram: wechat-miniprogram
 
 truths:
   requirements: docs/requirements.md
@@ -38,7 +43,7 @@ quality:
 
 delivery:
   max_rounds: 3
-  evidence_root: /tmp/agent-delivery/my-product
+  evidence_root: /tmp/agent-delivery/recruitment
   command_timeout_sec: 180
   checks:
     - id: workflow
@@ -60,23 +65,50 @@ delivery:
       env:
         NODE_ENV: test
         PORT: "{{port}}"
+        DATABASE_PATH: ":memory:"
+        WECHAT_MOCK: "1"
       health_url: "http://127.0.0.1:{{port}}/health"
+      ready_timeout_sec: 15
+    - id: miniprogram-syntax
+      when: "frontend_targets.miniprogram"
+      cmd: ["node", "--check"]
+      glob: "frontend/miniprogram/**/*.js"
+    - id: miniprogram-test
+      when: "frontend_targets.miniprogram"
+      cmd: ["node"]
+      glob: "frontend/miniprogram/tests/**/*.test.js"
+      allow_empty: true
     - id: web-syntax
       when: "frontend_targets.web"
       cmd: ["node", "--check"]
       glob: "frontend/web/**/*.js"
+    - id: web-static
+      when: "frontend_targets.web"
+      # Prefer product-local scripts/check_web.rb when business-specific asserts exist
+      cmd: ["ruby", "scripts/check_static_web.rb", "frontend/web"]
+    - id: web-health
+      when: "frontend_targets.web"
+      type: service_http
+      start: ["python3", "-m", "http.server", "{{port}}", "--directory", "frontend/web"]
+      health_url: "http://127.0.0.1:{{port}}/index.html"
   human_gates:
+    - id: wechat-devtools
+      description: "WeChat DevTools / real-device authorization remains a human gate"
+      when: "frontend_targets.miniprogram"
     - id: production-deploy
       description: "Production deploy requires explicit approval"
 
 kit:
   mode: link
-  path: ../agent-delivery-kit
+  path: /absolute/path/to/agent-delivery-kit
 
 owners:
   product: "Product Agent"
   architect: "Architect Agent"
   backend: "Backend Agent"
   frontend: "Frontend Agent"
+  mobile: "Mobile Agent"
+  ios: "iOS Agent"
+  android: "Android Agent"
   test: "Test Agent"
   orchestrator: "Orchestrator Agent"

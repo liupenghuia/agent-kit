@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  kit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ["3.2", "3.3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - name: Run kit self-tests
+        run: |
+          set -e
+          ruby tests/test_product_config.rb
+          ruby tests/test_validate_workflow.rb
+          ruby tests/test_init_product.rb
+          ruby tests/test_adopt_product.rb
+          ruby tests/test_delivery_runner.rb

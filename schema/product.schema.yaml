@@ -77,10 +77,14 @@ properties:
         type: array
         items:
           type: object
-          required: [id, cmd]
+          required: [id]
           properties:
             id:
               type: string
+            type:
+              type: string
+              enum: [cmd, command, service_http, http_service]
+              description: "cmd (default) or service_http"
             when:
               type: string
               description: "scopes.x | frontend_targets.y | true"
@@ -90,6 +94,25 @@ properties:
               type: array
               items:
                 type: string
+            start:
+              type: array
+              items:
+                type: string
+              description: "service_http process argv; supports {{port}}"
+            glob:
+              type: string
+              description: "Expand cmd once per matched file (path appended)"
+            allow_empty:
+              type: boolean
+            env:
+              type: object
+              additionalProperties:
+                type: string
+            health_url:
+              type: string
+            ready_timeout_sec:
+              type: integer
+              minimum: 1
       human_gates:
         type: array
         items:

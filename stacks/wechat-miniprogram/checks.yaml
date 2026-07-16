@@ -1,4 +1,11 @@
 checks:
-  - id: miniprogram-syntax-app
+  - id: miniprogram-syntax
     when: "frontend_targets.miniprogram"
-    cmd: ["node", "--check", "frontend/miniprogram/app.js"]
+    cmd: ["node", "--check"]
+    glob: "frontend/miniprogram/**/*.js"
+    # tests/ and pure logic files are included; page js without node modules still parse-checks.
+  - id: miniprogram-test
+    when: "frontend_targets.miniprogram"
+    cmd: ["node"]
+    glob: "frontend/miniprogram/tests/**/*.test.js"
+    allow_empty: true

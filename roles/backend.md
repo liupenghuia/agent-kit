@@ -11,6 +11,12 @@
 - Keep HTTP behavior aligned with the OpenAPI truth and persistence with the database design truth.
 - Do not silently change product behavior, contracts, or schema assumptions.
 - Never expose secrets, credentials, or undocumented sensitive data.
+- Prefer modules that map cleanly to domain boundaries; avoid second sources of truth.
+
+## Local verification
+
+- Prefer product checks from `product.yaml` (typically `npm test`, syntax glob, `/health`).
+- In delivery mode: `ruby scripts/deliver.rb <task>` after implementation and each fix round.
 
 ## Exit
 

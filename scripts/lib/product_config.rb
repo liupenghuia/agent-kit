@@ -96,7 +96,12 @@ module AgentDelivery
     end
 
     def owners
-      DEFAULT_OWNERS
+      custom = data["owners"]
+      if custom.is_a?(Hash) && !custom.empty?
+        (custom.values.map(&:to_s) | DEFAULT_OWNERS).uniq
+      else
+        DEFAULT_OWNERS
+      end
     end
 
     def when_true?(expression, task: nil)
@@ -144,8 +149,23 @@ module AgentDelivery
       errors << "product.yaml: delivery.checks must be a list" unless delivery["checks"].is_a?(Array)
 
       checks.each_with_index do |check, index|
-        unless check.is_a?(Hash) && check["id"] && check["cmd"].is_a?(Array)
-          errors << "product.yaml: checks[#{index}] requires id and cmd array"
+        unless check.is_a?(Hash) && check["id"]
+          errors << "product.yaml: checks[#{index}] requires id"
+          next
+        end
+        type = (check["type"] || "cmd").to_s
+        case type
+        when "cmd", "command"
+          unless check["cmd"].is_a?(Array)
+            errors << "product.yaml: checks[#{index}] type=cmd requires cmd array"
+          end
+        when "service_http", "http_service"
+          start = check["start"] || check["cmd"]
+          unless start.is_a?(Array) && !check["health_url"].to_s.empty?
+            errors << "product.yaml: checks[#{index}] type=service_http requires start/cmd array and health_url"
+          end
+        else
+          errors << "product.yaml: checks[#{index}] unsupported type #{type.inspect}"
         end
       end
 

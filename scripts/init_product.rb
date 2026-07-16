@@ -362,6 +362,25 @@ RUBY
   FileUtils.chmod(0o755, dest) if dest.file?
 end
 
+# Optional generic static web check used by static-admin-web stack defaults.
+static_check = kit_root / "scripts" / "check_static_web.rb"
+if static_check.file?
+  copy_file(static_check, product_root / "scripts" / "check_static_web.rb", force: options[:force])
+  FileUtils.chmod(0o755, product_root / "scripts" / "check_static_web.rb") if (product_root / "scripts" / "check_static_web.rb").file?
+end
+
+# AI tool adapters (thin entrypoints)
+[
+  ["adapters/claude/CLAUDE.md", "CLAUDE.md"],
+  ["adapters/cursor/.cursor/rules/agent-delivery.mdc", ".cursor/rules/agent-delivery.mdc"],
+  ["adapters/grok/skills/agent-delivery/SKILL.md", ".grok/skills/agent-delivery/SKILL.md"],
+].each do |from, to|
+  src = kit_root / from
+  src = kit_root / "#{from}.stub" unless src.file?
+  next unless src.file?
+  copy_file(src, product_root / to, force: options[:force])
+end
+
 # --- 7) Metadata ---
 write_file(product_root / "VERSION_KIT", "#{kit_version}\n", force: options[:force])
 

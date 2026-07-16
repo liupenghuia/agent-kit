@@ -83,6 +83,37 @@ end
   errors << "missing #{name}" unless product_root.join(name).file?
 end
 
+%w[validate_workflow.rb deliver.rb doctor.rb].each do |script|
+  path = product_root.join("scripts", script)
+  errors << "missing scripts/#{script}" unless path.file?
+end
+
+version_kit = product_root.join("VERSION_KIT")
+if version_kit.file? && kit_version_file.file?
+  pinned = version_kit.read.strip
+  kit_ver = kit_version_file.read.strip
+  if pinned.split(".").first != kit_ver.split(".").first
+    errors << "VERSION_KIT major #{pinned} incompatible with kit #{kit_ver}"
+  elsif pinned != kit_ver
+    warnings << "VERSION_KIT=#{pinned} differs from kit VERSION=#{kit_ver}"
+  end
+else
+  warnings << "VERSION_KIT missing (recommended after init/adopt)"
+end
+
+legacy = product_root.join("scripts", "legacy")
+if legacy.directory?
+  warnings << "scripts/legacy/ present (pre-kit scripts backed up; safe to remove after validation)"
+end
+
+unsupported = product.checks.reject do |check|
+  type = (check["type"] || "cmd").to_s
+  %w[cmd command service_http http_service].include?(type)
+end
+unsupported.each do |check|
+  errors << "unsupported check type for #{check['id']}: #{check['type']}"
+end
+
 puts "agent-delivery-kit doctor"
 puts "  product_root: #{product_root}"
 puts "  kit_root:     #{kit_root}"
@@ -91,6 +122,7 @@ puts "  kit_version:  #{product.kit_version}"
 puts "  ruby:         #{ruby_version} (#{RbConfig::CONFIG['ruby_install_name']})"
 puts "  scopes:       #{product.scopes.inspect}"
 puts "  targets:      #{product.frontend_targets.inspect}"
+puts "  stacks:       #{product.stacks.inspect}"
 puts "  checks:       #{product.checks.map { |c| c['id'] }.join(', ')}"
 
 warnings.each { |w| warn "WARN: #{w}" }
